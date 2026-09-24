@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>JEV Decide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+  :root{
+    --bg:#0C0C12; --surface:#15151E; --surface2:#1E1E2A; --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.16);
+    --ink:#FAFAF9; --muted:#A6A6B4; --faint:#71717F;
+    --lila:#6366F1; --lila-l:#B7BEFF; --rosa:#EC4899; --rosa-l:#FF9CD2;
+    --good:#34D399; --warn:#FBBF24; --bad:#F87171; --hot:#FB7185;
+    --sans:"Inter",system-ui,-apple-system,sans-serif; --disp:"Archivo Black","Arial Black",sans-serif;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(50% 40% at 88% -4%,rgba(99,102,241,.18),transparent 60%),radial-gradient(46% 40% at 4% 104%,rgba(236,72,153,.14),transparent 62%);background-attachment:fixed}
+  a{color:var(--lila-l)}
+  .app{display:grid;grid-template-columns:264px minmax(0,1fr);min-height:100vh}
+  /* sidebar */
+  .side{position:sticky;top:0;height:100vh;overflow-y:auto;border-right:1px solid var(--line);padding:22px 14px;display:flex;flex-direction:column;gap:16px;background:rgba(12,12,18,.6);backdrop-filter:blur(4px)}
+  .brand{padding:0 8px}
+  .wm{font-family:var(--disp);font-size:22px;letter-spacing:.5px;text-transform:uppercase;line-height:1}
+  .wm .d{background:linear-gradient(95deg,#B7BEFF,#EAA6FF 50%,#FF9CD2);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .tag{font-size:11.5px;color:var(--muted);margin-top:7px}
+  nav{display:flex;flex-direction:column;gap:3px}
+  .nav{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:9px 11px;border-radius:10px;border:1px solid transparent;background:none;color:var(--muted);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;transition:.13s}
+  .nav .ic{width:20px;text-align:center;font-size:15px}
+  .nav:hover{background:var(--surface);color:var(--ink)}
+  .nav[aria-selected="true"]{background:var(--surface2);color:var(--ink);border-color:var(--line2);box-shadow:inset 3px 0 0 -1px var(--rosa)}
+  .meter{margin-top:auto;border-top:1px solid var(--line);padding-top:14px;font-size:11.5px;color:var(--faint);line-height:1.7}
+  .meter b{color:var(--ink);font-variant-numeric:tabular-nums}
+  /* main */
+  main{padding:30px 34px 70px;max-width:1100px}
+  .h1{font-family:var(--disp);font-size:23px;text-transform:uppercase;letter-spacing:.4px;display:flex;align-items:center;gap:12px;margin:0 0 4px}
+  .psub{color:var(--muted);max-width:70ch;margin:0 0 8px}
+  .asks{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 20px}
+  .askchip{font-size:11.5px;font-weight:600;color:var(--lila-l);background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.4);padding:4px 10px;border-radius:999px}
+  .askchip.s{color:var(--rosa-l);background:rgba(236,72,153,.1);border-color:rgba(236,72,153,.4)}
+  .askchip.n{color:var(--warn);background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.4)}
+  .bar-top{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+  .btn{font:inherit;font-weight:700;font-size:13.5px;cursor:pointer;border-radius:10px;padding:9px 15px;border:1px solid transparent;background:linear-gradient(95deg,#6366F1,#EC4899);color:#fff;transition:.13s}
+  .btn:hover{filter:brightness(1.08)}
+  .btn.ghost{background:var(--surface2);border-color:var(--line2);color:var(--ink)}
+  .btn:disabled{opacity:.5;cursor:default;filter:none}
+  /* rows */
+  .rows{display:flex;flex-direction:column;gap:10px}
+  .row{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;grid-template-columns:1fr auto;gap:12px 16px;align-items:start}
+  .rtext{font-size:14px;color:#E7E7ED}
+  .ract{display:flex;gap:8px;align-items:center}
+  .mini{font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;border-radius:8px;padding:7px 12px;border:1px solid var(--line2);background:var(--surface2);color:var(--ink);white-space:nowrap}
+  .mini:hover{border-color:var(--lila)}
+  .res{grid-column:1/-1;display:none;border-top:1px solid var(--line);padding-top:12px;margin-top:2px}
+  .res.on{display:block}
+  .badge{display:inline-flex;align-items:center;gap:7px;font-family:var(--disp);font-size:14px;text-transform:uppercase;letter-spacing:.4px;padding:7px 13px;border-radius:10px;margin-bottom:10px}
+  .b-good{background:rgba(52,211,153,.14);color:var(--good);box-shadow:inset 0 0 0 1px rgba(52,211,153,.4)}
+  .b-warn{background:rgba(251,191,36,.14);color:var(--warn);box-shadow:inset 0 0 0 1px rgba(251,191,36,.4)}
+  .b-bad{background:rgba(248,113,113,.14);color:var(--bad);box-shadow:inset 0 0 0 1px rgba(248,113,113,.4)}
+  .b-neutral{background:rgba(99,102,241,.14);color:var(--lila-l);box-shadow:inset 0 0 0 1px rgba(99,102,241,.4)}
+  .b-hot{background:rgba(251,113,133,.16);color:var(--hot);box-shadow:inset 0 0 0 1px rgba(251,113,133,.5)}
+  .ans{display:flex;flex-direction:column;gap:9px}
+  .a{display:grid;grid-template-columns:130px 1fr auto;gap:10px;align-items:center;font-size:13px}
+  .a .k{color:var(--faint);font-weight:700;font-size:11px;letter-spacing:.5px;text-transform:uppercase;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+  .tipo{font-size:9.5px;font-weight:700;letter-spacing:.3px;text-transform:none;padding:2px 7px;border-radius:999px;color:var(--lila-l);background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.35);line-height:1.25;cursor:help}
+  .tipo.tt-score{color:var(--rosa-l);background:rgba(236,72,153,.1);border-color:rgba(236,72,153,.35)}
+  .tipo.tt-noul{color:var(--warn);background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.35)}
+  .a .v{font-weight:600}
+  .track{height:8px;border-radius:6px;background:var(--surface2);overflow:hidden;position:relative}
+  .track span{position:absolute;inset:0 auto 0 0;border-radius:6px;background:linear-gradient(90deg,#6366F1,#EC4899)}
+  .seg{display:flex;gap:3px}
+  .seg div{flex:1;height:8px;border-radius:4px;background:var(--surface2)}
+  .seg div.on{background:linear-gradient(90deg,#6366F1,#EC4899)}
+  .num{font-variant-numeric:tabular-nums;color:var(--muted);font-size:12px;white-space:nowrap}
+  .meta{margin-top:9px;font-size:11.5px;color:var(--faint);display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+  .rawbtn{font:inherit;font-size:11px;font-weight:600;color:var(--lila-l);background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.35);border-radius:7px;padding:3px 9px;cursor:pointer;transition:background .12s}
+  .rawbtn:hover{background:rgba(99,102,241,.22)}
+  .raw{margin:10px 0 0;padding:13px 15px;background:#08080D;border:1px solid var(--line2);border-radius:10px;font-family:var(--mono,ui-monospace,SFMono-Regular,Menlo,monospace);font-size:12px;line-height:1.55;color:var(--ink);white-space:pre;overflow:auto;max-height:360px}
+  .raw .jk{color:var(--lila-l)} .raw .js{color:var(--rosa-l)} .raw .jn{color:var(--good,#34D399)} .raw .jb{color:var(--warn,#FBBF24)}
+  .spin{width:14px;height:14px;border:2px solid var(--line2);border-top-color:var(--rosa);border-radius:50%;display:inline-block;animation:sp .6s linear infinite;vertical-align:-2px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .err{color:var(--bad);font-size:12.5px}
+  /* free mode */
+  textarea,input,select{width:100%;background:var(--surface);border:1px solid var(--line2);border-radius:10px;color:var(--ink);font:inherit;font-size:14px;padding:10px 12px}
+  textarea{min-height:90px;resize:vertical}
+  .free label{display:block;font-size:12px;color:var(--faint);text-transform:uppercase;letter-spacing:.6px;font-weight:700;margin:14px 0 6px}
+  @media(max-width:820px){.app{grid-template-columns:1fr}.side{position:static;height:auto;flex-direction:row;flex-wrap:wrap;border-right:none;border-bottom:1px solid var(--line)}.meter{display:none}.brand{flex:1 1 100%}nav{flex-direction:row;flex-wrap:wrap}main{padding:22px 18px 60px}}
+</style></head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand"><div class="wm">JEV<br><span class="d">Decide</span></div><div class="tag">Una IA que NO habla: <b>decide</b>. TypeSafe · vía OpenRouter · en vivo.</div></div>
+    <nav id="nav" role="tablist"></nav>
+    <div class="meter">Decisiones: <b id="mCount">0</b><br>Coste total: <b id="mCost">$0.000000</b><br>Media: <b id="mMs">—</b> ms/decisión</div>
+  </aside>
+  <main>
+    <h1 class="h1"><span id="ucIcon">🎯</span><span id="ucName">—</span></h1>
+    <p class="psub" id="ucSub"></p>
+    <div class="asks" id="ucAsks"></div>
+    <div class="bar-top" id="ucBar"></div>
+    <div class="rows" id="rows"></div>
+  </main>
+</div>
+<script>
+const B=(emoji,label,cls)=>({emoji,label,cls});
+const lbl=a=>a.legend?a.legend[String(Math.round(a.score))]:'';
+
+const UC=[
+ { id:'leads', icon:'🎯', name:'Ventas · Leads', sub:'JEV puntúa la temperatura de cada lead y decide si merece llamada comercial ya.',
+   ask:{ temperatura:{type:'score',instructions:'Temperatura del lead (interés real de compra)',criteria:['frío','tibio','caliente']}, listo:{type:'noul',instructions:'¿Está listo para que le llame un comercial YA?'} },
+   route:a=>{const t=lbl(a.temperatura),l=a.listo.noul; if(t==='caliente'||l>=0.6)return B('🔥','Llamar YA','hot'); if(t==='tibio')return B('✉️','Nutrir','warn'); return B('💤','Descartar','neutral');},
+   items:[
+     'Tengo una pyme de 20 empleados y quiero automatizar la atención al cliente. Presupuesto aprobado, ¿cuándo empezamos?',
+     'Vi vuestro vídeo, interesante. Algún día me gustaría probar algo así.',
+     'Necesito una demo esta semana, mi jefe decide el viernes entre vosotros y otro proveedor.',
+     '¿Tenéis plan gratis para probar? Somos estudiantes haciendo un trabajo.',
+     'Somos una agencia con 15 clientes y buscamos una herramienta para revender. ¿Hablamos?',
+     'Me apunté a la newsletter, a ver qué contáis.',
+     'Llevo semanas comparando. Pasadme precios y un caso de éxito parecido a un ecommerce.',
+     '¿Esto sirve para restaurantes? Tengo dos locales y quiero digitalizarlos.',
+     'Ni idea de IA pero me han dicho que lo necesito. ¿Me lo explicáis?',
+     'Startup con ronda cerrada, queremos implementar ya y escalar rápido. ¿Plan Enterprise?'
+   ]},
+ { id:'support', icon:'🎧', name:'Soporte · Triaje', sub:'JEV clasifica el ticket; si tiene confianza lo autorresuelve, si no, lo escala a un humano.',
+   ask:{ ruta:{type:'choice',instructions:'Clasifica el ticket de soporte',criteria:{horario:'pregunta por horarios de apertura o tienda física',estado_pedido:'pregunta dónde está su pedido o seguimiento',devolucion:'devolución, cambio o reembolso simple',incidencia_tecnica:'un error o fallo técnico del producto/servicio',queja_grave:'queja fuerte, insultos, amenaza legal o pide un responsable'}} },
+   route:a=>{const c=a.ruta.choice,cf=a.ruta.confidence; if(c==='queja_grave')return B('🧑','A un humano','bad'); if(cf>=0.85)return B('🤖','Auto: '+c,'good'); return B('🧐','Revisar','warn');},
+   items:[
+     '¿A qué hora abrís los sábados?',
+     '¿Dónde está mi pedido #4821? Hace 5 días que no sé nada.',
+     'Quiero devolver el producto, no me ha convencido.',
+     'La app me da error 500 al iniciar sesión desde ayer.',
+     'Llevo 3 semanas esperando y nadie responde. Quiero un responsable YA y valoro acciones legales.',
+     '¿Puedo cambiar la talla de mi pedido antes de que salga?',
+     'Vuestro servicio es una estafa, voy a poner 1 estrella en todos lados.',
+     '¿Tenéis tienda física en Madrid?',
+     'El botón de descarga no funciona en el móvil.',
+     'Se me ha cobrado dos veces la suscripción este mes.'
+   ]},
+ { id:'mod', icon:'🛡️', name:'Moderación · Comentarios', sub:'JEV modera los comentarios de tu canal y decide qué publicar, ocultar o revisar.',
+   ask:{ veredicto:{type:'choice',instructions:'Modera este comentario de YouTube',criteria:{ok:'comentario normal, válido o positivo',spam:'spam, estafa o enlace basura',ofensivo:'insulto, odio o acoso',autopromo:'autopromoción de su propio canal o producto'}} },
+   route:a=>{const c=a.veredicto.choice; if(c==='ok')return B('✅','Publicar','good'); if(c==='autopromo')return B('🕵️','Revisar','warn'); return B('🚫','Ocultar','bad');},
+   items:[
+     '¡Gran vídeo, me ha ayudado un montón! Gracias crack.',
+     '🔥 Gana 5000€/mes con este método, link en mi bio 👉',
+     'Eres un inútil, menudo humo vendes.',
+     '¿Podrías hacer un vídeo sobre n8n? Estaría genial.',
+     'Suscríbete a MI canal, hago lo mismo pero mejor: /micanal',
+     'primero jajaja',
+     'Compra seguidores baratos aquí: bit.ly/xxxx',
+     'Del tirón y sin humo, así se explica. Bravo.'
+   ]},
+ { id:'ideas', icon:'💡', name:'Fundador · Ideas de negocio', sub:'JEV puntúa tu idea sin humo (potencial + viabilidad) y decide si montarla, explorarla o descartarla.',
+   ask:{ potencial:{type:'score',instructions:'Potencial de negocio de la idea',criteria:['humo','flojo','decente','bueno','brutal']}, viable:{type:'noul',instructions:'¿Es viable montarlo hoy con la IA/tecnología actual?'} },
+   route:a=>{const p=lbl(a.potencial),v=a.viable.noul; if((p==='bueno'||p==='brutal')&&v>=0.5)return B('🚀','Montar','good'); if(p==='decente')return B('🤔','Explorar','warn'); return B('🗑️','Descartar','bad');},
+   items:[
+     'Una app que genera una web 3D hiperrealista de un restaurante con un solo prompt.',
+     'Un agente de IA que gestiona y responde los emails de una pyme.',
+     'Una camiseta con QR que cambia de color según la temperatura.',
+     'Un marketplace de profesores digitales con avatar de IA, por sectores.',
+     'Suscripción mensual de calcetines, pero "con IA".',
+     'Una herramienta que convierte tus reuniones de Zoom en tareas del CRM automáticamente.',
+     'Una red social solo para dueños de gatos naranjas.',
+     'Una consultora que monta agentes de IA no-code para pymes locales.'
+   ]},
+ { id:'emails', icon:'📩', name:'Emails · Prioridad', sub:'JEV prioriza tu bandeja y decide qué atiendes tú ahora y qué se puede delegar.',
+   ask:{ prioridad:{type:'score',instructions:'Prioridad del email',criteria:['baja','media','alta','urgente']}, tuya:{type:'noul',instructions:'¿Requiere que respondas TÚ personalmente (no delegable)?'} },
+   route:a=>{const p=lbl(a.prioridad),t=a.tuya.noul; if(p==='urgente')return B('🔴','Ahora','bad'); if(p==='alta')return B('🟠','Hoy','warn'); if(t>=0.5)return B('🟡','Tú, luego','neutral'); return B('🟢','Delegar','good');},
+   items:[
+     'URGENTE: el servidor de producción está caído, clientes afectados.',
+     'Recordatorio: la renovación del dominio vence en 30 días.',
+     'El inversor pide los números actualizados para mañana a primera hora.',
+     'Newsletter semanal de una herramienta que usas.',
+     'Un cliente top amenaza con irse si no le llamas hoy.',
+     'Propuesta de colaboración de otro creador, sin prisa.',
+     'Factura pendiente de un proveedor, vence en 2 días.',
+     'Has ganado un iPhone, haz clic aquí para reclamarlo.'
+   ]},
+ { id:'reviews', icon:'⭐', name:'Reseñas · Sentimiento', sub:'JEV mide el sentimiento de cada reseña y decide si hay que responder ya.',
+   ask:{ sentimiento:{type:'score',instructions:'Sentimiento de la reseña',criteria:['muy negativo','negativo','neutro','positivo','muy positivo']}, publica:{type:'noul',instructions:'¿Conviene responder públicamente a esta reseña?'} },
+   route:a=>{const s=lbl(a.sentimiento); if(s==='muy negativo'||s==='negativo')return B('🆘','Responder ya','bad'); if(s==='muy positivo'||s==='positivo')return B('💬','Agradecer','good'); return B('•','Neutro','neutral');},
+   items:[
+     'Fatal, no funciona nada y encima el soporte no responde. Huid.',
+     'Cumple, sin más. Esperaba algo mejor por el precio.',
+     'Me ha cambiado el negocio, lo recomiendo a todo el mundo. 10/10.',
+     'Bien, hace lo que promete.',
+     'Llevo 2 meses y va regular, a veces se cuelga.',
+     'El mejor dinero que he gastado este año.',
+     'Ni fu ni fa.',
+     'Me cobraron de más y nadie me devuelve el dinero, vergonzoso.'
+   ]},
+ { id:'rrhh', icon:'🧑‍💼', name:'RRHH · Candidatos', sub:'JEV evalúa el encaje de cada candidato y decide a quién pasar a entrevista.',
+   ask:{ encaje:{type:'score',instructions:'Encaje del candidato con el puesto',criteria:['descartar','dudoso','bueno','top']}, entrevista:{type:'noul',instructions:'¿Pasar a entrevista?'} },
+   route:a=>{const e=lbl(a.encaje),i=a.entrevista.noul; if(e==='top'||i>=0.6)return B('✅','Entrevista','good'); if(e==='dudoso')return B('🤔','2ª vuelta','warn'); return B('❌','Descartar','bad');},
+   items:[
+     '5 años liderando equipos de ventas B2B SaaS, superó objetivos 3 años seguidos.',
+     'Recién graduado, sin experiencia pero con muchas ganas.',
+     '10 años de experiencia, pero en un sector totalmente distinto.',
+     'Domina el stack exacto que usamos y trae referencias excelentes.',
+     'CV con faltas de ortografía y sin relación con el puesto.',
+     'Freelance top, pero solo quiere media jornada y 100% remoto.',
+     'Buen perfil técnico, pero pide el doble del presupuesto.',
+     'Sin experiencia formal, pero un portfolio brutal con proyectos propios.'
+   ]},
+ { id:'churn', icon:'🔥', name:'Retención · Churn', sub:'JEV detecta clientes en riesgo de darse de baja para actuar a tiempo.',
+   ask:{ riesgo:{type:'noul',instructions:'¿Este cliente está en riesgo de darse de baja?'}, urgencia:{type:'score',instructions:'Urgencia de actuar',criteria:['baja','media','alta']} },
+   route:a=>{const r=a.riesgo.noul; if(r>=0.6)return B('🆘','Retención ya','bad'); if(r>=0.3)return B('👀','Vigilar','warn'); return B('✅','Sin riesgo','good');},
+   items:[
+     'Estoy pensando en cancelar, ya casi no lo uso.',
+     'Todo perfecto, acabo de renovar el plan anual.',
+     'Llevo 3 tickets sin resolver, esto es muy frustrante.',
+     '¿Cómo doy de baja mi cuenta?',
+     'Me encanta, ¿tenéis plan para ampliar a todo mi equipo?',
+     'Vuestro competidor me ofrece lo mismo por la mitad de precio.',
+     'No he entrado en 2 meses, no le veo el uso.',
+     'Funciona genial, gracias por el último update.'
+   ]},
+ { id:'titulos', icon:'✍️', name:'YouTube · Titulares', sub:'JEV puntúa el gancho de cada titular y decide cuál usar.',
+   ask:{ gancho:{type:'score',instructions:'Gancho / potencial de clic del titular de YouTube',criteria:['flojo','normal','bueno','brutal']} },
+   route:a=>{const g=lbl(a.gancho); if(g==='brutal')return B('🏆','Úsalo','good'); if(g==='bueno')return B('👍','Vale','good'); if(g==='normal')return B('😐','Mejóralo','warn'); return B('🔁','Reescribe','bad');},
+   items:[
+     'Probé JEV, la IA que NO habla: mira lo que decide (gratis)',
+     'Tutorial de inteligencia artificial 2026',
+     'Le di mis ideas de negocio a una IA y me dijo, sin humo, cuál montar',
+     'Novedades de IA de esta semana',
+     'CANVA se come a Claude Slides: ¿quién gana?',
+     'Mi opinión sobre la inteligencia artificial',
+     'Creé un empleado de IA que trabaja por mí (y le hablo por WhatsApp)',
+     'Cosas de IA que igual te interesan'
+   ]},
+ { id:'router', icon:'📮', name:'Enrutado · Departamento', sub:'JEV lee el mensaje y lo manda al departamento correcto al instante.',
+   ask:{ depto:{type:'choice',instructions:'¿A qué departamento va este mensaje?',criteria:{ventas:'quiere comprar, pide presupuesto o precios',soporte:'duda o problema de uso del producto',facturacion:'factura, cobro, pago o suscripción',tecnico:'error técnico, bug o fallo de la API',rrhh:'empleo, candidatura o tema interno'}} },
+   route:a=>B('📮',a.depto.choice,'neutral'),
+   items:[
+     'Quiero un presupuesto para 50 licencias.',
+     'No me llega el email de verificación.',
+     '¿Me podéis enviar la factura de septiembre?',
+     'La API devuelve 500 en el endpoint de pagos.',
+     '¿Tenéis vacantes de desarrollador backend?',
+     'Me interesa el plan Enterprise, ¿hablamos?',
+     'Se me ha cobrado dos veces este mes.',
+     '¿Cómo exporto todos mis datos?'
+   ]},
+];
+
+// ---- estado / meter ----
+let count=0, cost=0, msTotal=0;
+const $=s=>document.querySelector(s);
+function updMeter(){ $('#mCount').textContent=count; $('#mCost').textContent='$'+cost.toFixed(6); $('#mMs').textContent=count?Math.round(msTotal/count):'—'; }
+
+// ---- llamada a JEV ----
+async function decide(state, questions){
+  const r=await fetch('/api/decide',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({state,questions})});
+  return r.json();
+}
+
+// ---- etiqueta del TIPO de decisión JEV ----
+const TIPO={choice:['DECISIÓN','choice · elige una opción entre varias'],score:['SCORE','score · puntúa en una rúbrica ordenada'],noul:['SÍ / NO','noul · probabilidad de sí (0–100%)']};
+function tipoTag(t){const x=TIPO[t];return x?`<span class="tipo tt-${t}" title="${x[1]}">${x[0]}</span>`:'';}
+
+// ---- resaltado del JSON crudo de JEV ----
+function hlJson(obj){
+  let s=JSON.stringify(obj,null,2).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return s.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)/g,function(m){
+    let cls='jn';
+    if(/^"/.test(m)) cls=/:$/.test(m)?'jk':'js';
+    else if(/true|false|null/.test(m)) cls='jb';
+    return '<span class="'+cls+'">'+m+'</span>';
+  });
+}
+
+// ---- render de una respuesta ----
+function renderAns(name,cfg,ans){
+  if(!ans) return '';
+  if(ans.type==='choice'){
+    const p=Math.round((ans.confidence||0)*100);
+    return `<div class="a"><span class="k">${name}${tipoTag(ans.type)}</span><span class="v">${ans.choice}</span><span class="num">${p}%</span></div>`;
+  }
+  if(ans.type==='score'){
+    const n=cfg.criteria.length, idx=Math.round(ans.score);
+    const segs=cfg.criteria.map((c,i)=>`<div class="${i===idx?'on':''}" title="${c}"></div>`).join('');
+    return `<div class="a"><span class="k">${name}${tipoTag(ans.type)}</span><div class="seg">${segs}</div><span class="num">${lbl(ans)}</span></div>`;
+  }
+  if(ans.type==='noul'){
+    const p=Math.round(ans.noul*100);
+    return `<div class="a"><span class="k">${name}${tipoTag(ans.type)}</span><div class="track"><span style="width:${p}%"></span></div><span class="num">${p}%</span></div>`;
+  }
+  return '';
+}
+
+async function analyze(uc, item, resEl, btn){
+  resEl.classList.add('on'); resEl.innerHTML='<span class="spin"></span> <span class="num">JEV decidiendo…</span>';
+  if(btn) btn.disabled=true;
+  try{
+    const d=await decide(item, uc.ask);
+    if(d.error||!d.answers){ resEl.innerHTML=`<div class="err">Error: ${JSON.stringify(d.error||d).slice(0,200)}</div>`; return; }
+    count++; cost+=(d.usage&&d.usage.cost)||0; msTotal+=d._ms||0; updMeter();
+    const rt=uc.route(d.answers);
+    const ansHtml=Object.entries(uc.ask).map(([k,cfg])=>renderAns(k,cfg,d.answers[k])).join('');
+    const raw={answers:d.answers, usage:d.usage, model:d.model};
+    resEl.innerHTML=`<div class="badge b-${rt.cls}">${rt.emoji} ${rt.label}</div><div class="ans">${ansHtml}</div>`+
+      `<div class="meta">⚡ ${d._ms} ms · $${((d.usage&&d.usage.cost)||0).toFixed(6)} · modelo ${d.model||'jev'}`+
+      ` <button class="rawbtn" type="button">{ } ver respuesta JEV</button></div>`+
+      `<pre class="raw" hidden>${hlJson(raw)}</pre>`;
+    const rb=resEl.querySelector('.rawbtn'), pre=resEl.querySelector('.raw');
+    rb.onclick=()=>{const hid=pre.hasAttribute('hidden');if(hid){pre.removeAttribute('hidden');rb.textContent='{ } ocultar respuesta';}else{pre.setAttribute('hidden','');rb.textContent='{ } ver respuesta JEV';}};
+  }catch(e){ resEl.innerHTML=`<div class="err">${String(e)}</div>`; }
+  finally{ if(btn) btn.disabled=false; }
+}
+
+let cur=0;
+function selectUC(i){
+  cur=i; const uc=UC[i];
+  document.querySelectorAll('.nav').forEach((n,j)=>n.setAttribute('aria-selected',String(j===i)));
+  $('#ucIcon').textContent=uc.icon; $('#ucName').textContent=uc.name; $('#ucSub').textContent=uc.sub;
+  $('#ucAsks').innerHTML=Object.entries(uc.ask).map(([k,c])=>{const cls=c.type==='score'?'s':c.type==='noul'?'n':'';return `<span class="askchip ${cls}">${c.type.toUpperCase()} · ${k}</span>`;}).join('');
+  $('#ucBar').innerHTML='';
+  const all=document.createElement('button'); all.className='btn'; all.textContent='▶ Analizar todos'; $('#ucBar').appendChild(all);
+  const rows=$('#rows'); rows.innerHTML='';
+  const rowEls=uc.items.map(item=>{
+    const row=document.createElement('div'); row.className='row';
+    row.innerHTML=`<div class="rtext">${item}</div>`;
+    const act=document.createElement('div'); act.className='ract';
+    const btn=document.createElement('button'); btn.className='mini'; btn.textContent='Analizar';
+    act.appendChild(btn); row.appendChild(act);
+    const res=document.createElement('div'); res.className='res'; row.appendChild(res);
+    btn.onclick=()=>analyze(uc,item,res,btn);
+    rows.appendChild(row);
+    return {item,res,btn};
+  });
+  all.onclick=async()=>{ all.disabled=true; all.textContent='Analizando…'; for(const r of rowEls){ await analyze(uc,r.item,r.res,r.btn); await new Promise(z=>setTimeout(z,220)); } all.disabled=false; all.textContent='▶ Analizar todos'; };
+}
+
+// build nav
+const nav=$('#nav');
+UC.forEach((uc,i)=>{ const b=document.createElement('button'); b.className='nav'; b.setAttribute('role','tab'); b.innerHTML=`<span class="ic">${uc.icon}</span>${uc.name}`; b.onclick=()=>selectUC(i); nav.appendChild(b); });
+selectUC(0); updMeter();
+</script>
+</body></html>

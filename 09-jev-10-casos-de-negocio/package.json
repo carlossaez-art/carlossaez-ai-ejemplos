@@ -1,0 +1,9 @@
+{
+  "name": "jev-decide",
+  "private": true,
+  "type": "module",
+  "description": "Interfaz para JEV (TypeSafe System One) vía OpenRouter — 10 casos de uso de decisión en vivo.",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.mjs"
+  }
+}

@@ -1,0 +1,13 @@
+# Claves y secretos — NUNCA subir
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Dependencias y ruido
+node_modules/
+.DS_Store
+dist/
+build/
+*.log
