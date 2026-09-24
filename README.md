@@ -14,7 +14,7 @@ Cada carpeta es un vídeo. Dentro tienes lo que hace falta para reproducirlo tú
 | **[La IA que DECIDE, no que HABLA — 10 casos de negocio con JEV](https://youtu.be/H72rbLYLnmE)** | 🟢 [App completa](./09-jev-10-casos-de-negocio) — los 10 casos, ejecutable en local |
 | **[Reels UGC con IA + TEXTO detrás del personaje](https://youtu.be/8L8LSYJ1ck8)** | 🟢 [Prompts y pasos](./10-texto-detras-del-personaje) |
 | [CANVA AI contra CLAUDE SLIDES](https://youtu.be/soKaYdt8sUM) | — |
-| [Creé un PROFESOR con IA y me vacila!](https://youtu.be/na6kcuRhVeg) | — |
+| **[Creé un PROFESOR con IA y me vacila!](https://youtu.be/na6kcuRhVeg)** | 🟢 [App completa](./07-profesor-ia-tavus-elevenlabs) — avatar conversacional en tiempo real |
 | [Claude Slides · ¿Es el fin de CANVA, POWERPOINT O DRIVE?](https://youtu.be/voOUXMW67Hs) | — |
 | [Hice 30 anuncios con GPT IMAGE 2.5 en segundos](https://youtu.be/glPIcbWTSXA) | — |
 | [Claude Fable 5.1 + Higgsfield · una WEB 3D con UN prompt](https://youtu.be/WSQqBuyekIo) | — |

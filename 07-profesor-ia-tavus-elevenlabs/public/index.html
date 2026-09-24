@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Profesor de Ajedrez IA</title>
+<script src="https://unpkg.com/@daily-co/daily-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chess.js@0.12.1/chess.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%}
+  body{background:#07070c;color:#f4f4f8;font-family:system-ui,-apple-system,sans-serif;overflow:hidden}
+  #avatar{position:fixed;inset:0;width:100%;height:100%;object-fit:cover;background:#0a0a0f;z-index:0;display:block}
+  /* Tablero superpuesto */
+  #board-wrap{position:fixed;right:2.6vh;top:2.6vh;z-index:6;--bs:min(50vh,46vw);width:var(--bs);display:none}
+  #board-bar{display:flex;align-items:center;gap:8px;width:100%;margin:0 0 8px 0}
+  #board-bar .nav{background:rgba(10,10,16,.78);color:#fff;border:0;border-radius:99px;width:34px;height:34px;padding:0;font-size:15px;cursor:pointer;flex:0 0 auto}
+  #board-bar .nav:hover{background:rgba(125,255,91,.85);color:#04220a}
+  #moveLabel{flex:1;min-width:0;text-align:center;padding:6px 12px;border-radius:99px;background:rgba(10,10,16,.78);backdrop-filter:blur(6px);
+    font-size:13px;font-weight:700;color:#f0e9dc;box-shadow:0 4px 16px rgba(0,0,0,.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #moveLabel b{color:#f4d03f}
+  #board{width:var(--bs);height:var(--bs);display:grid;grid-template-columns:repeat(8,1fr);grid-template-rows:repeat(8,1fr);
+    border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.65);outline:3px solid rgba(0,0,0,.4)}
+  .sq{position:relative;display:grid;place-items:center;font-size:calc(var(--bs)/8*0.80);line-height:1;user-select:none}
+  .sq.lt{background:#ecdcc2}
+  .sq.dk{background:#b07a4e}
+  .sq.hl{box-shadow:inset 0 0 0 4px rgba(244,208,63,.95)}
+  .pc{filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+  .pc.wp{color:#fbfbfb;-webkit-text-stroke:1.6px #2b2b2b}
+  .pc.bp{color:#1b1b1b;-webkit-text-stroke:1.1px #ececec}
+  .coord{position:absolute;font-size:calc(var(--bs)/8*0.17);font-weight:700;opacity:.55}
+  .coord.rank{top:2px;left:4px}
+  .coord.file{bottom:1px;right:5px}
+  /* UI */
+  .overlay{position:fixed;inset:0;z-index:20;display:grid;place-items:center;text-align:center;background:radial-gradient(60% 60% at 50% 40%,rgba(20,20,30,.5),rgba(7,7,12,.94))}
+  .panel{max-width:440px;padding:28px}
+  h1{font-size:26px;margin-bottom:6px}
+  .sub{color:#a99cbb;font-size:15px;margin-bottom:22px;line-height:1.5}
+  button.cta{background:#7dff5b;color:#04220a;border:0;border-radius:99px;padding:15px 30px;font-weight:800;font-size:17px;cursor:pointer}
+  button.cta:disabled{opacity:.5;cursor:default}
+  #status{position:fixed;left:16px;bottom:16px;z-index:10;color:#cdbfe0;font-size:14px;text-shadow:0 1px 4px rgba(0,0,0,.9);pointer-events:none}
+  #hang{position:fixed;top:16px;left:16px;z-index:10;background:rgba(255,80,80,.92);color:#fff;border:0;border-radius:99px;padding:10px 18px;font-size:14px;cursor:pointer}
+  #testvoice{position:fixed;top:16px;left:16px;z-index:10;background:rgba(255,255,255,.12);color:#fff;border:1px solid #333;border-radius:99px;padding:9px 15px;font-size:13px;cursor:pointer}
+  #dbg{position:fixed;left:12px;bottom:44px;z-index:10;max-width:300px;max-height:32vh;overflow:auto;
+    background:rgba(0,0,0,.74);border:1px solid #333;border-radius:10px;padding:8px 10px;color:#8fe;font:11px/1.4 ui-monospace,monospace;white-space:pre-wrap}
+  .mic{display:inline-block;width:9px;height:9px;border-radius:50%;background:#7dff5b;margin-right:7px;vertical-align:middle}
+  #lvl{display:inline-block;width:84px;height:9px;background:#333;border-radius:9px;overflow:hidden;vertical-align:middle;margin-left:5px}
+  #lvlbar{display:block;height:100%;width:0;background:#7dff5b;transition:width .06s}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+  <video id="avatar" autoplay playsinline></video>
+  <audio id="avatarAudio" autoplay></audio>
+
+  <div id="board-wrap">
+    <div id="board-bar">
+      <button class="nav" id="prev" title="Jugada anterior">◀</button>
+      <span id="moveLabel">Tu partida</span>
+      <button class="nav" id="next" title="Jugada siguiente">▶</button>
+    </div>
+    <div id="board"></div>
+  </div>
+
+  <button id="hang" hidden>Colgar</button>
+  <div class="overlay" id="overlay">
+    <div class="panel">
+      <h1>♟️ Tu profesor de ajedrez</h1>
+      <div class="sub">Un profesional digital con IA. Pulsa, permite el micro y <b>háblale</b>: te escucha y te responde. El tablero sigue lo que explica.</div>
+      <button class="cta" id="start">Hablar con el coach</button>
+    </div>
+  </div>
+  <pre id="dbg" hidden></pre>
+  <div id="status"></div>
+
+<script>
+  const $=id=>document.getElementById(id);
+  const video=$("avatar"), audioEl=$("avatarAudio"), dbg=$("dbg");
+  let call=null, sessionId=null, retryTimer=null;
+  const setStatus=t=>$("status").innerHTML=t;
+  // Panel de debug oculto (queda limpio para grabar). Sigue enviando el log a /api/log por si hay que depurar.
+  function log(m){ try{ dbg.textContent=(new Date().toLocaleTimeString().slice(0,8)+"  "+m+"\n"+dbg.textContent).slice(0,2200); }catch(e){}
+    try{ fetch("/api/log",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({m:String(m)})}); }catch(e){} }
+
+  /* ================== CONFIGURA TU PARTIDA AQUI ==================
+     PGN          -> pega tu partida
+     ORIENT       -> "b" si jugabas negras, "w" si blancas
+     ANNOT        -> la jugada que quieres marcar en el tablero
+     Y en server.js, GAME_CONTEXT: lo que el profe sabe de la partida.
+     =============================================================== */
+  /* ---------- Motor de ajedrez + posiciones de la partida ---------- */
+  const PGN="1.d4 d6 2.c4 e6 3.e4 Ne7 4.Nf3 f5 5.exf5 Nxf5 6.Bg5 Be7 7.Bxe7 Qxe7 8.g3 O-O 9.Be2 Bd7 10.O-O Be8 11.Nc3 Nd7 12.Rc1 Nh6 13.Bd3 Bh5 14.Be2 Rf7 15.Rc2 Raf8 16.Nh4 Bxe2 17.Qxe2 g5 18.Ng2 Nf5 19.Qd2 Rg7 20.Nb5 Nb6 21.Nxa7 Qf6 22.Nb5 c6 23.Nc3 Nxd4 24.Qe3 Nxc2";
+  const GLYPH={k:"♚",q:"♛",r:"♜",b:"♝",n:"♞",p:"♟"};
+  let positions=[], curPly=0, BLUNDER_PLY=0;
+  const ORIENT="b"; // lado desde el que se ve el tablero: "b" negras, "w" blancas
+  const ANNOT={ san:"Nb6", tag:"?", note:"mejor c6" }; // jugada clave (su peor momento)
+
+  function buildPositions(){
+    try{
+      const g=new Chess(); g.load_pgn(PGN);
+      const hist=g.history({verbose:true});
+      const g2=new Chess();
+      positions=[{ply:0,fen:g2.fen(),san:null,from:null,to:null,moveNo:0,color:null}];
+      hist.forEach((m,i)=>{ g2.move({from:m.from,to:m.to,promotion:m.promotion}); positions.push({ply:i+1,fen:g2.fen(),san:m.san,from:m.from,to:m.to,moveNo:Math.floor(i/2)+1,color:m.color}); });
+      BLUNDER_PLY=positions.findIndex(p=>p.moveNo===20&&p.color==="b");
+      if(BLUNDER_PLY<0) BLUNDER_PLY=0;
+      curPly=BLUNDER_PLY;
+    }catch(e){ log("chess build err "+e.message); }
+  }
+  function renderBoard(fen, highlights){
+    const hl=new Set(highlights||[]); const rows=fen.split(" ")[0].split("/");
+    const grid=[];
+    for(let r=0;r<8;r++){ const cells=[]; for(const ch of rows[r]){ if(/\d/.test(ch)){ for(let k=0;k<+ch;k++) cells.push(null); } else cells.push(ch); } grid.push(cells); }
+    const seq = ORIENT==="b" ? [7,6,5,4,3,2,1,0] : [0,1,2,3,4,5,6,7]; // negras → tablero girado
+    let html="";
+    for(let ri=0;ri<8;ri++){ const r=seq[ri]; const rankNum=8-r;
+      for(let ci=0;ci<8;ci++){ const c=seq[ci]; const p=grid[r][c]; const light=(r+c)%2===0; const sq=String.fromCharCode(97+c)+rankNum;
+        let inner=""; if(p){ const white=p===p.toUpperCase(); inner='<span class="pc '+(white?"wp":"bp")+'">'+GLYPH[p.toLowerCase()]+'</span>'; }
+        let coord=""; if(ci===0) coord+='<span class="coord rank">'+rankNum+'</span>'; if(ri===7) coord+='<span class="coord file">'+String.fromCharCode(97+c)+'</span>';
+        html+='<div class="sq '+(light?"lt":"dk")+(hl.has(sq)?" hl":"")+'">'+inner+coord+'</div>';
+      } }
+    $("board").innerHTML=html;
+  }
+  function goToPly(i){
+    if(i<0) i=0; if(i>=positions.length) i=positions.length-1; curPly=i;
+    const p=positions[i]; renderBoard(p.fen, p.from?[p.from,p.to]:[]);
+    let label;
+    if(i===0) label="Posición inicial";
+    else { const num=p.moveNo, pre=p.color==="w"?num+".":num+"...";
+      label="Jugada "+num+" · "+pre+p.san;
+      if(i===BLUNDER_PLY) label='Jugada '+num+' · '+pre+'<b>'+ANNOT.san+' '+ANNOT.tag+'</b> ('+ANNOT.note+')'; }
+    $("moveLabel").innerHTML=label;
+  }
+  function goToMoveNo(n,color){ const idx=positions.findIndex(p=>p.moveNo===n&&p.color===color);
+    if(idx>0) goToPly(idx); else { const alt=positions.findIndex(p=>p.moveNo===n); if(alt>0) goToPly(alt); } }
+  $("prev").addEventListener("click",()=>goToPly(curPly-1));
+  $("next").addEventListener("click",()=>goToPly(curPly+1));
+  function showBoard(v){ $("board-wrap").style.display=v?"block":"none"; if(v) goToPly(curPly); }
+
+  /* ---------- Auto-sync: el tablero sigue lo que dice el coach ---------- */
+  const NUMW={uno:1,dos:2,tres:3,cuatro:4,cinco:5,seis:6,siete:7,ocho:8,nueve:9,diez:10,once:11,doce:12,trece:13,catorce:14,quince:15,dieciseis:16,"dieciséis":16,diecisiete:17,dieciocho:18,diecinueve:19,veinte:20,veintiuno:21,veintidos:22,"veintidós":22,veintitres:23,"veintitrés":23,veinticuatro:24,veinticinco:25,veintiseis:26,"veintiséis":26,veintisiete:27};
+  function parseAndSync(text){
+    if(!text) return; const t=" "+text.toLowerCase().replace(/[.,;:¿?¡!]/g," ")+" ";
+    const re=/(?:jugada|jugadas|movimiento|movimientos|turno|move)\s+(?:numero\s+|n[uú]mero\s+|n\.?\s*)?([0-9]{1,2}|uno|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|once|doce|trece|catorce|quince|diecis[eé]is|diecisiete|dieciocho|diecinueve|veinte|veintiuno|veintid[oó]s|veintitr[eé]s|veinticuatro|veinticinco|veintis[eé]is|veintisiete)/g;
+    let mm,last=null; while((mm=re.exec(t))!==null) last=mm[1];
+    if(last!=null){ const n=/^[0-9]+$/.test(last)?+last:NUMW[last]; if(n>=1&&n<=40){ log("sync→ jugada "+n); goToMoveNo(n,ORIENT); return; } }
+    const san=t.match(/\b(o-o-o|o-o|[kqrbn]?[a-h]?[1-8]?x?[a-h][1-8](?:=[qrbn])?)\b/);
+    if(san){ const q=san[1].replace(/[+#]/g,""); const idx=positions.findIndex(p=>p.san&&p.san.toLowerCase().replace(/[+#]/g,"")===q); if(idx>0){ log("sync→ "+san[1]); goToPly(idx); } }
+  }
+
+  /* ---------- Conversación (Tavus CVI) ---------- */
+  $("start").addEventListener("click", startCall);
+  $("hang").addEventListener("click", endSession);
+  window.addEventListener("pagehide", ()=>{ if(sessionId) navigator.sendBeacon("/api/end", new Blob([JSON.stringify({sessionId})],{type:"application/json"})); });
+
+  async function endSession(){
+    log("colgando + terminando conversación…");
+    try{ if(sessionId) await fetch("/api/end",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({sessionId})}); }catch(e){}
+    try{ if(call) await call.leave(); }catch(e){}
+  }
+
+  async function startCall(){
+    $("start").disabled=true; clearTimeout(retryTimer); setStatus("Conectando con tu coach…"); log("CLICK — pidiendo sesión");
+    let r;
+    try{
+      const resp = await fetch("/api/converse",{method:"POST"}); log("converse HTTP "+resp.status); r = await resp.json();
+      if(resp.status===429 || (r && r.detail && /rate limit/i.test(r.detail))){
+        let s=30; const tick=()=>{ if(s<=0){ setStatus("Reintentando…"); return startCall(); }
+          setStatus("⏳ Límite de peticiones. Reintento en "+s+"s."); s--; retryTimer=setTimeout(tick,1000); }; tick(); return; }
+      if(!r || !r.roomUrl){ setStatus("No arrancó la sesión: "+JSON.stringify(r).slice(0,140)); $("start").disabled=false; return; }
+    }catch(e){ setStatus("Fallo de red: "+e.message); $("start").disabled=false; return; }
+    sessionId = r.sessionId; log("sesión OK, uniéndome…");
+    try{
+      call = window.DailyIframe.createCallObject({ videoSource:false, subscribeToTracksAutomatically:true });
+      ["joined-meeting","participant-joined","participant-updated","participant-left","track-started","track-stopped","app-message","error","nonfatal-error","left-meeting"]
+        .forEach(ev=>call.on(ev, e=>onEvt(ev,e)));
+      await call.join({ url:r.roomUrl }); log("join() OK");
+      await call.setLocalAudio(true);
+      $("overlay").hidden=true; $("hang").hidden=false; showBoard(true);
+      setStatus('<span class="mic"></span> En directo — háblale. <span id="lvl"><i id="lvlbar"></i></span>');
+      setTimeout(micMeter, 700);
+    }catch(e){ setStatus("Fallo al conectar: "+e.message); log("EXC "+e.message); $("start").disabled=false; }
+  }
+
+  function onEvt(name, e){
+    if(name==="track-started"){
+      const local=e.participant?.local, k=e.track?.kind; log("track "+k+" · "+(local?"YO":"COACH"));
+      if(!local){
+        if(k==="video"){ video.srcObject=new MediaStream([e.track]); video.play().catch(()=>{}); }
+        if(k==="audio"){ audioEl.srcObject=new MediaStream([e.track]); audioEl.muted=false; audioEl.play().catch(err=>log("⚠ audio "+err.name)); }
+      }
+    }
+    else if(name==="app-message"){
+      const d=e.data||{}, t=d.event_type||"";
+      // texto hablado del coach → sincroniza el tablero
+      const spoken=d.properties?.speech||d.properties?.text||d.text||d.transcript||"";
+      if(/utterance|transcription/i.test(t) && spoken){ parseAndSync(spoken); }
+      if(t && !/utterance|transcription|audio/i.test(t)) log("evt: "+t);
+    }
+    else if(name==="participant-joined") log("entra: "+(e.participant?.local?"YO":"COACH"));
+    else if(name==="error"||name==="nonfatal-error") log("⚠ "+name+": "+(e?.errorMsg||JSON.stringify(e).slice(0,100)));
+    else if(name==="left-meeting") cleanup();
+  }
+
+  function micMeter(){
+    try{
+      const track=call.participants().local?.tracks?.audio?.persistentTrack;
+      if(!track){ log("⚠ sin micro publicado"); return; }
+      const ctx=new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state==="suspended") ctx.resume();
+      const an=ctx.createAnalyser(); an.fftSize=256; ctx.createMediaStreamSource(new MediaStream([track])).connect(an);
+      const data=new Uint8Array(an.fftSize);
+      (function loop(){ if(!call) return; an.getByteTimeDomainData(data);
+        let peak=0; for(const v of data) peak=Math.max(peak,Math.abs(v-128));
+        const bar=$("lvlbar"); if(bar) bar.style.width=Math.min(100,peak*1.8)+"%"; requestAnimationFrame(loop); })();
+    }catch(e){ log("meter err "+e.message); }
+  }
+
+  function cleanup(){ if(call){ call.destroy(); call=null; } sessionId=null;
+    $("overlay").hidden=false; $("hang").hidden=true; $("start").disabled=false; showBoard(false); setStatus(""); }
+
+  // init
+  buildPositions();
+</script>
+</body>
+</html>

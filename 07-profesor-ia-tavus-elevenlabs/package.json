@@ -1,0 +1,14 @@
+{
+  "name": "profesor-ia-tavus-elevenlabs",
+  "private": true,
+  "type": "module",
+  "description": "Profesor de ajedrez con avatar conversacional en tiempo real (Tavus CVI + voz española de ElevenLabs).",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.js",
+    "persona": "node --env-file-if-exists=.env crear-persona.mjs",
+    "uso": "node --env-file-if-exists=.env ver-uso-tavus.mjs"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
