@@ -1,6 +1,6 @@
 # Landing adaptativa — la web que se pinta sola para cada visitante
 
-Código del vídeo **[Las landing pages han MUERTO](https://www.youtube.com/@carlossaezai)**.
+Código del vídeo **[Landing Pages con IA: JEV + CLAUDE crean webs ULTRAPERSONALIZADAS](https://youtu.be/j3uyWpB0Ay0)**.
 
 **La misma landing se pinta distinta según la probabilidad de que el visitante convierta.**
 Quien decide qué bloques mostrar no es una regla escrita a mano, sino **Jev 1.13** (TypeSafe AI) a través de OpenRouter:

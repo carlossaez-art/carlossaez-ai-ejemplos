@@ -11,7 +11,7 @@ Cada carpeta es un vídeo. Dentro tienes lo que hace falta para reproducirlo tú
 
 | Vídeo | Qué hay aquí |
 |---|---|
-| **[Las landing pages han MUERTO — la web que se pinta sola](https://www.youtube.com/@carlossaezai)** | 🟢 [App completa](./11-landing-adaptativa-jev) — JEV decide cada bloque en tiempo real |
+| **[Landing Pages con IA: JEV + CLAUDE crean webs ULTRAPERSONALIZADAS](https://youtu.be/j3uyWpB0Ay0)** | 🟢 [App completa](./11-landing-adaptativa-jev) — JEV decide cada bloque en tiempo real |
 | **[La IA que DECIDE, no que HABLA — 10 casos de negocio con JEV](https://youtu.be/H72rbLYLnmE)** | 🟢 [App completa](./09-jev-10-casos-de-negocio) — los 10 casos, ejecutable en local |
 | **[Reels UGC con IA + TEXTO detrás del personaje](https://youtu.be/8L8LSYJ1ck8)** | 🟢 [Prompts y pasos](./10-texto-detras-del-personaje) |
 | [CANVA AI contra CLAUDE SLIDES](https://youtu.be/soKaYdt8sUM) | — |
