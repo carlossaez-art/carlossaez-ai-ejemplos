@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Landing adaptativa con JEV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/landing.css">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="app" class="app">
+
+  <!-- ===== Panel de control (izquierda) ===== -->
+  <aside id="panel" class="panel">
+    <header class="panel-head">
+      <div class="brand">
+        <span class="brand-dot"></span>
+        <div>
+          <div class="brand-title">Landing adaptativa <span class="muted" id="brand-esc"></span></div>
+          <div class="brand-sub">decidida por <b>JEV 1.13</b> · TypeSafe vía OpenRouter</div>
+        </div>
+      </div>
+      <div class="escenarios" id="escenarios"></div>
+      <div class="stats" id="stats"><span class="muted">sin llamadas todavía</span></div>
+    </header>
+
+    <section class="sec">
+      <div class="sec-title">1 · ¿Quién entra en la web?</div>
+      <div class="perfiles" id="perfiles"></div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-title-row">
+        <div class="sec-title">2 · Lo que la web sabe del visitante</div>
+        <button class="mini lab-btn" id="btn-lab">🎛 Laboratorio: ajustar señales</button>
+      </div>
+      <pre class="json" id="senales"></pre>
+      <div class="lab" id="lab" hidden></div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-title-row">
+        <div class="sec-title">3 · Lo que decide JEV</div>
+        <button class="mini primary" id="btn-decidir">Volver a decidir</button>
+      </div>
+      <div class="gauge" id="gauge">
+        <div class="gauge-num" id="gauge-num">—</div>
+        <div class="gauge-lbl">probabilidad de convertir<br>en esta sesión</div>
+        <div class="gauge-etapa" id="gauge-etapa"></div>
+      </div>
+      <div class="decisiones" id="decisiones"></div>
+    </section>
+
+    <footer class="panel-foot">
+      <label class="chk"><input type="checkbox" id="chk-explicar" checked> Mostrar etiquetas de JEV en la landing</label>
+      <div class="atajos">Atajos: <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> perfil · <kbd>C</kbd> comparar · <kbd>P</kbd> ocultar panel · <kbd>E</kbd> etiquetas · <kbd>V</kbd> código en vivo · <kbd>L</kbd> laboratorio</div>
+    </footer>
+  </aside>
+
+  <!-- ===== Escenario (derecha) ===== -->
+  <main class="stage">
+    <div class="toolbar">
+      <div class="toolbar-left">
+        <button class="tab active" data-view="single">Landing</button>
+        <button class="tab" data-view="compare">Comparar los 3</button>
+        <button class="tab code-toggle" id="btn-code" title="Tecla V">&lt;/&gt; Código en vivo</button>
+      </div>
+      <div class="toolbar-right" id="toolbar-status"></div>
+    </div>
+
+    <div id="view-single" class="view">
+      <div class="code" id="code" hidden>
+        <div class="code-head">
+          <div><b>app.js</b> · <span class="muted">renderLanding()</span> <span class="muted">— código real, leído con <code>toString()</code></span></div>
+          <div class="code-ctrl"><label>velocidad <input type="range" id="code-speed" min="120" max="1500" step="20" value="550"></label><button class="mini" id="btn-replay">↻ Repetir</button></div>
+        </div>
+        <div class="code-body" id="code-body"></div>
+      </div>
+      <div class="browser">
+        <div class="browser-bar">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <div class="url" id="browser-url">mesallena.app</div>
+          <div class="who" id="browser-who"></div>
+        </div>
+        <div class="browser-body" id="landing"></div>
+      </div>
+    </div>
+
+    <div id="view-compare" class="view" hidden>
+      <div class="compare" id="compare"></div>
+    </div>
+
+    <div class="overlay" id="overlay" hidden><div class="spinner"></div><div id="overlay-text">JEV está decidiendo…</div></div>
+  </main>
+</div>
+<script type="module" src="/app.js"></script>
+</body>
+</html>
